@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskPulse - Modern Task Management System</title>
+  <meta name="description" content="A modern, high-performance web dashboard for your Python Task Management System.">
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Chart.js CDN for Insights Page -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header class="header">
+      <div class="brand-section">
+        <div class="brand-icon">⚡</div>
+        <div>
+          <h1 class="brand-title">TaskPulse</h1>
+          <p class="brand-subtitle">Python Task Management Dashboard</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="backend-badge" id="backendHealth">
+          <span class="pulse-dot"></span> Checking Backend...
+        </div>
+        <button class="btn btn-secondary" id="themeToggleBtn">🌙 Dark Mode</button>
+        <button class="btn btn-primary" id="addTaskBtn">➕ Add Task</button>
+      </div>
+    </header>
+
+    <!-- Top Statistics Grid -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Total Tasks</div>
+          <div class="stat-value" id="totalTasksVal">0</div>
+        </div>
+        <div class="stat-icon-wrapper stat-icon-total">📋</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Completed</div>
+          <div class="stat-value" id="completedTasksVal">0</div>
+        </div>
+        <div class="stat-icon-wrapper stat-icon-completed">✅</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Pending</div>
+          <div class="stat-value" id="pendingTasksVal">0</div>
+        </div>
+        <div class="stat-icon-wrapper stat-icon-pending">⏳</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Overdue</div>
+          <div class="stat-value" id="overdueTasksVal">0</div>
+        </div>
+        <div class="stat-icon-wrapper stat-icon-overdue">⚠️</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Due Today</div>
+          <div class="stat-value" id="todayTasksVal">0</div>
+        </div>
+        <div class="stat-icon-wrapper stat-icon-today">⚡</div>
+      </div>
+    </section>
+
+    <!-- Navigation & Main Layout -->
+    <nav class="dashboard-nav">
+      <div class="nav-tabs">
+        <button class="tab-btn active" id="tabTasksBtn">📋 Task Management</button>
+        <button class="tab-btn" id="tabInsightsBtn">📊 Insights & Analytics</button>
+      </div>
+    </nav>
+
+    <!-- TAB 1: TASK MANAGEMENT VIEW -->
+    <div class="view-container active" id="viewTasksContainer">
+      
+      <!-- Controls Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="input-field" id="searchInput" placeholder="Search tasks by name...">
+        </div>
+
+        <div class="filter-group">
+          <!-- Status Filter -->
+          <select class="select-field" id="statusFilter" aria-label="Filter by Status">
+            <option value="all">Status: All</option>
+            <option value="pending">Pending</option>
+            <option value="completed">Completed</option>
+          </select>
+
+          <!-- Priority Filter -->
+          <select class="select-field" id="priorityFilter" aria-label="Filter by Priority">
+            <option value="all">Priority: All</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+
+          <!-- Deadline Filter -->
+          <select class="select-field" id="deadlineFilter" aria-label="Filter by Deadline">
+            <option value="all">Deadline: All</option>
+            <option value="overdue">Overdue</option>
+            <option value="today">Today</option>
+            <option value="tomorrow">Tomorrow</option>
+            <option value="upcoming">Upcoming</option>
+          </select>
+
+          <!-- Sort Select -->
+          <select class="select-field" id="sortSelect" aria-label="Sort Tasks By">
+            <option value="id">Sort by: Default (ID)</option>
+            <option value="priority_desc">Sort by: Priority (High First)</option>
+            <option value="due_date">Sort by: Due Date</option>
+            <option value="name">Sort by: Task Name</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Task Table View Wrapper -->
+      <div class="table-card" id="tableViewWrapper">
+        <table class="task-table">
+          <thead>
+            <tr>
+              <th style="width: 48px;">Done</th>
+              <th style="width: 80px;">ID</th>
+              <th>Task Name</th>
+              <th style="width: 140px;">Priority</th>
+              <th style="width: 220px;">Due Date & Deadline</th>
+              <th style="width: 150px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="taskTableBody">
+            <!-- Dynamic rows rendered by app.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-icon">📂</div>
+        <h3 class="empty-title">No tasks found</h3>
+        <p>No tasks match your current filter criteria or search query. Click "Add Task" to create one!</p>
+      </div>
+    </div>
+
+    <!-- TAB 2: INSIGHTS & ANALYTICS VIEW -->
+    <div class="view-container" id="viewInsightsContainer">
+      <div class="insights-grid">
+        
+        <!-- Status Chart Card -->
+        <div class="chart-card">
+          <h3 class="chart-title">📊 Status Distribution</h3>
+          <div class="chart-container">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Priority Chart Card -->
+        <div class="chart-card">
+          <h3 class="chart-title">🎯 Priority Breakdown</h3>
+          <div class="chart-container">
+            <canvas id="priorityChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Deadline Chart Card -->
+        <div class="chart-card">
+          <h3 class="chart-title">⏳ Deadline Analysis</h3>
+          <div class="chart-container">
+            <canvas id="deadlineChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Task Summary Panel -->
+      <div class="summary-box">
+        <h3 class="summary-title">📈 System Task Summary</h3>
+        <div class="summary-details-grid">
+          <div class="summary-item">
+            <div class="summary-item-label">Total Tasks</div>
+            <div class="summary-item-val" id="sumTotal">0</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-item-label">Completed Tasks</div>
+            <div class="summary-item-val" id="sumCompleted" style="color: #34d399;">0</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-item-label">Pending Tasks</div>
+            <div class="summary-item-val" id="sumPending" style="color: #fbbf24;">0</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-item-label">Completion Rate</div>
+            <div class="summary-item-val" id="sumRate" style="color: #8b5cf6;">0%</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-item-label">High Priority</div>
+            <div class="summary-item-val" id="sumHigh" style="color: #f87171;">0</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-item-label">Medium Priority</div>
+            <div class="summary-item-val" id="sumMed" style="color: #fbbf24;">0</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-item-label">Low Priority</div>
+            <div class="summary-item-val" id="sumLow" style="color: #34d399;">0</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-item-label">Overdue Tasks</div>
+            <div class="summary-item-val" id="sumOverdue" style="color: #f87171;">0</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-item-label">Due Today</div>
+            <div class="summary-item-val" id="sumToday" style="color: #c084fc;">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ADD / EDIT TASK MODAL -->
+  <div class="modal-overlay" id="taskModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">➕ Add New Task</h3>
+        <button class="modal-close" id="closeModalBtn">&times;</button>
+      </div>
+      <form id="taskForm">
+        <div class="form-group">
+          <label class="form-label" for="taskNameInput">Task Name *</label>
+          <input type="text" id="taskNameInput" class="input-field" placeholder="e.g. Design API Endpoint specs" required style="padding-left:14px;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="taskPrioritySelect">Priority *</label>
+          <select id="taskPrioritySelect" class="select-field" style="width: 100%;">
+            <option value="high">High</option>
+            <option value="medium" selected>Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="taskDueDateInput">Due Date *</label>
+          <input type="date" id="taskDueDateInput" class="input-field" required style="padding-left:14px;">
+        </div>
+
+        <div class="form-group" id="taskStatusGroup" style="display: none;">
+          <label class="form-label" for="taskStatusSelect">Status</label>
+          <select id="taskStatusSelect" class="select-field" style="width: 100%;">
+            <option value="pending">Pending</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DELETE TASK CONFIRMATION MODAL -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">🗑️ Delete Task</h3>
+        <button class="modal-close" id="closeDeleteModalBtn">&times;</button>
+      </div>
+      <p style="color: var(--text-secondary); margin-bottom: 20px;">
+        Are you sure you want to delete <strong id="deleteTaskName" style="color: var(--text-primary);">this task</strong>?
+        This action will remove it from <code style="color:var(--accent-purple-light)">t.json</code>.
+      </p>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmDeleteBtn" style="background:#ef4444;">Delete Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- JavaScript Modules -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
